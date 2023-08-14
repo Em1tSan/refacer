@@ -67,26 +67,26 @@ print(upscaler_models)
 
 with gr.Blocks() as demo:
     with gr.Row():
-        gr.Markdown("# Refacer v 1.4 </br> Версия от [Neurogen](https://t.me/neurogen_news) </br> [Поддержать автора](https://www.donationalerts.com/r/em1t)")
+        gr.Markdown("# Refacer v 1.3.2 </br> Version by [Neurogen](https://t.me/neurogen_news) </br> [Support me](https://www.donationalerts.com/r/em1t)")
     with gr.Row():
         if args.use_video_path:
-           video=gr.Text(label="Путь к оригинальному видео (в формате C:\Video\example.mp4)", interactive=True)
+           video=gr.Text(label="Path to the original video (For example: C:\Video\example.mp4)", interactive=True)
         else:
-            video=gr.Video(label="Оригинальное видео ", interactive=True)
-        video2=gr.Video(label="Обработанное видео",interactive=False,format="mp4")
+            video=gr.Video(label="Original video ", interactive=True)
+        video2=gr.Video(label="Refaced video",interactive=False,format="mp4")
 
     for i in range(0,num_faces):
-        with gr.Tab(f"Лицо #{i+1}"):
+        with gr.Tab(f"Face #{i+1}"):
             with gr.Row():
-                origin.append(gr.Image(label="Лицо, которое заменяем"))
-                destination.append(gr.Image(label="Лицо, на которое надо заменить"))
+                origin.append(gr.Image(label="Face to replace"))
+                destination.append(gr.Image(label="Destination face"))
             with gr.Row():
-                thresholds.append(gr.Slider(label="Порог",minimum=0.0,maximum=1.0,value=0.2))
+                thresholds.append(gr.Slider(label="Threshold",minimum=0.0,maximum=1.0,value=0.2))
     with gr.Row():
         #upscaler.append(gr.Radio(label="Upscaler", choices=models_ESRGAN, value=models_ESRGAN[0], interactive=True))
-        upscaler.append(gr.Dropdown(label="Выберите модель апскейлера / энхейсера", choices=upscaler_models, value=upscaler_models[0], interactive=True))
+        upscaler.append(gr.Dropdown(label="Choose upscaler/enhacer model", choices=upscaler_models, value=upscaler_models[0], interactive=True))
     with gr.Row():
-        button=gr.Button("Начать обработку", variant="primary")
+        button=gr.Button("Reface", variant="primary")
 
     button.click(fn=run,inputs=[video]+origin+destination+thresholds+upscaler,outputs=[video2])
 

@@ -31,7 +31,7 @@ class RefacerMode(Enum):
      CPU, CUDA, COREML, TENSORRT = range(1, 5)
 
 class Refacer:
-    def __init__(self,force_cpu=False,tensorrt=False,gpu_threads=4,max_memory=8000,video_quality=10,frame_limit=1000):
+    def __init__(self,force_cpu=False,tensorrt=False,gpu_threads=4,max_memory=8000,video_quality=18,frame_limit=1000,fp16_inswapper=True):
         self.first_face = False
         self.force_cpu = force_cpu
         self.gpu_threads = gpu_threads
@@ -39,6 +39,7 @@ class Refacer:
         self.tensorrt = tensorrt
         self.video_quality = video_quality
         self.frame_limit = frame_limit
+        self.fp16_inswapper = fp16_inswapper
         self.__check_encoders()
         self.__check_providers()
         self.__limit_resources()
@@ -68,6 +69,15 @@ class Refacer:
             ('TensorrtExecutionProvider', {
              'trt_engine_cache_enable': True,
              'trt_engine_cache_path':'./trtcache',
+             'trt_fp16_enable': True,
+             'trt_layer_norm_fp32_fallback': True
+
+            }),
+            ('CUDAExecutionProvider', {
+                'tunable_op_enable': 1, 
+                'tunable_op_tuning_enable': 1,
+                'cudnn_conv1d_pad_to_nc1d': 0,
+                'cudnn_conv_algo_search': 'EXHAUSTIVE',
             })
         ]
             self.use_num_cpus = self.gpu_threads
@@ -117,7 +127,12 @@ class Refacer:
         self.rec_app = ArcFaceONNX(model_path,sess_rec)
         self.rec_app.prepare(0)
 
-        model_path = 'inswapper_128.onnx'
+        if self.fp16_inswapper:
+            model_path = 'inswapper_128.fp16.onnx'
+            print(f"Using inswapper_128.fp16.onnx")
+        else:
+            model_path = 'inswapper_128.onnx'
+            print(f"Using inswapper_128.onnx")
         sess_swap = rt.InferenceSession(model_path, self.sess_options, providers=self.providers)
         self.face_swapper = INSwapper(model_path,sess_swap)
         self.face_swapper_input_size = self.face_swapper.input_size[0]
@@ -152,7 +167,7 @@ class Refacer:
             #stream = ffmpeg.input(output_video_path)
             in1 = ffmpeg.input(output_video_path)
             in2 = ffmpeg.input(video_path)
-            out = ffmpeg.output(in1.video, in2.audio, new_path,video_bitrate=self.ffmpeg_video_bitrate,vcodec=self.ffmpeg_video_encoder, **{'crf': self.video_quality})
+            out = ffmpeg.output(in1.video, in2.audio, new_path,video_bitrate=self.ffmpeg_video_bitrate,vcodec=self.ffmpeg_video_encoder,crf=self.video_quality)
             out.run(overwrite_output=True,quiet=True)
         else:
             new_path = output_video_path

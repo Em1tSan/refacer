@@ -2,10 +2,10 @@ ffmpeg_python==0.2.0
 gradio==3.33.1
 insightface==0.7.3
 numpy==1.24.3
-onnx==1.14.0
+onnx
 onnxruntime_gpu
-opencv_python==4.7.0.72
-opencv_python_headless==4.7.0.72
+opencv_python
+opencv_python_headless
 scikit-image==0.20.0
 tqdm
 psutil
